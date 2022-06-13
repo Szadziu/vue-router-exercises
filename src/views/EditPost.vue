@@ -4,11 +4,15 @@
     <div>
       <p>Autor: {{ post.lead }}</p>
       <p>
-        <textarea name="post-content" cols="50" rows="30" v-model="text">
-        </textarea>
+        <textarea
+          name="post-content"
+          cols="50"
+          rows="30"
+          v-model="post.content"
+        />
       </p>
       <router-link tag="button" to="/">wstecz</router-link>
-      <button>aktualizuj</button>
+      <button @click="updatePost">aktualizuj</button>
     </div>
   </div>
 </template>
@@ -20,7 +24,6 @@ export default {
   data() {
     return {
       post: '',
-      text: '',
       errors: [],
       postDate: '2022-06-13 14:25:21',
     };
@@ -30,12 +33,12 @@ export default {
     async updatePost() {
       const fd = new FormData();
 
-      fd.append('title', this.text);
+      fd.append('content', this.post.content);
       fd.append('lead', this.post.lead);
       fd.append('c_date', this.postDate);
 
       try {
-        await Axios.post(`/posts${this.$route.params.id}`, fd);
+        await Axios.post(`/posts/${this.$route.params.id}`, fd);
       } catch (e) {
         this.errors.push(e);
       }
