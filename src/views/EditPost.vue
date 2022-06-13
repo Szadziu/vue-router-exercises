@@ -3,6 +3,10 @@
     <h3>Edycja posta nr: {{ $route.params.id }}</h3>
     <div>
       <p>Autor: {{ post.lead }}</p>
+      <label>
+        Tytuł:
+        <input type="text" v-model="post.title" />
+      </label>
       <p>
         <textarea
           name="post-content"
@@ -19,13 +23,14 @@
 
 <script>
 import { Axios } from '@/axios';
+import { format } from 'date-fns';
 
 export default {
   data() {
     return {
       post: '',
       errors: [],
-      postDate: '2022-06-13 14:25:21',
+      postDate: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
     };
   },
 
@@ -33,9 +38,11 @@ export default {
     async updatePost() {
       const fd = new FormData();
 
-      fd.append('content', this.post.content);
+      fd.append('title', this.post.title);
       fd.append('lead', this.post.lead);
       fd.append('c_date', this.postDate);
+
+      fd.append('content', this.post.content);
 
       try {
         await Axios.post(`/posts/${this.$route.params.id}`, fd);

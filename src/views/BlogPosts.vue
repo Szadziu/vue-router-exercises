@@ -33,28 +33,33 @@ export default {
     showMorePosts() {
       this.dataLoading = true;
 
-      if (this.pagination.current_page <= this.pagination.number_of_pages) {
-        Axios.get('/posts?page=2')
-          .then((response) => (this.posts = response.data.posts))
+      console.log(this.pagination.current_page);
+      if (this.pagination.current_page < this.pagination.number_of_pages) {
+        Axios.get(`/posts?page=${++this.pagination.current_page || 1}`)
+          .then((response) => {
+            this.pagination = response.data.pagination;
+            this.posts = response.data.posts;
+          })
           .catch((e) => this.errors.push(e));
       }
       this.dataLoading = false;
     },
   },
-
+  //* do usuniecia
   async created() {
-    try {
-      this.dataLoading = true;
+    // try {
+    //   this.dataLoading = true;
 
-      const posts = await Axios.get('/posts');
-      this.posts = posts.data.posts;
-      const pagination = await Axios.get('/posts');
-      this.pagination = pagination.data.pagination;
-    } catch (e) {
-      this.errors.push(e);
-    }
+    //   const response = await Axios.get('/posts');
+    //   this.posts = response.data.posts;
+    //   this.pagination = response.data.pagination;
+    // } catch (e) {
+    //   this.errors.push(e);
+    // }
 
-    this.dataLoading = false;
+    // this.dataLoading = false;
+
+    this.showMorePosts();
   },
 };
 </script>
