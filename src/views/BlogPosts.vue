@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2>Posts</h2>
-    <p v-if="dataLoading">trwa wczytywanie postów...</p>
+    <p v-if="dataProcessing">trwa wczytywanie postów...</p>
     <router-link
       v-else
       tag="p"
@@ -11,8 +11,21 @@
       >{{ post.title }}
     </router-link>
 
-    <router-link tag="button" to="/">wstecz</router-link>
-    <button @click="showMorePosts">pokaż więcej</button>
+    <router-link tag="button" to="/">wróć</router-link>
+
+    <button
+      :disabled="dataProcessing || currentPage <= pagination.number_of_pages"
+      @click="changePage"
+    >
+      wstecz
+    </button>
+
+    <button
+      @click="changePage"
+      :disabled="dataProcessing || currentPage >= pagination.number_of_pages"
+    >
+      pokaż więcej
+    </button>
   </div>
 </template>
 
@@ -25,41 +38,44 @@ export default {
       posts: [],
       errors: [],
       pagination: null,
-      dataLoading: false,
+      dataProcessing: false,
+      currentPage: 1,
     };
   },
 
   methods: {
-    showMorePosts() {
-      this.dataLoading = true;
+    async fetchData() {
+      this.dataProcessing = true;
 
-      console.log(this.pagination.current_page);
-      if (this.pagination.current_page < this.pagination.number_of_pages) {
-        Axios.get(`/posts?page=${++this.pagination.current_page || 1}`)
-          .then((response) => {
-            this.pagination = response.data.pagination;
-            this.posts = response.data.posts;
-          })
-          .catch((e) => this.errors.push(e));
+      try {
+        const response = await Axios.get(
+          `/posts?page=${this.$route.query.page}`
+        );
+        this.posts.push(...response.data.posts);
+        this.pagination = response.data.pagination;
+      } catch (e) {
+        this.errors.push(e);
       }
-      this.dataLoading = false;
+
+      this.dataProcessing = false;
+    },
+
+    changePage() {
+      if (
+        this.pagination &&
+        this.currentPage < this.pagination.number_of_pages
+      ) {
+        this.currentPage++;
+      } else if (this.pagination && this.currentPage > 1) {
+        this.currentPage--;
+      }
+
+      this.$router.push(`/posts?page=${this.currentPage}`);
     },
   },
-  //* do usuniecia
+
   async created() {
-    // try {
-    //   this.dataLoading = true;
-
-    //   const response = await Axios.get('/posts');
-    //   this.posts = response.data.posts;
-    //   this.pagination = response.data.pagination;
-    // } catch (e) {
-    //   this.errors.push(e);
-    // }
-
-    // this.dataLoading = false;
-
-    this.showMorePosts();
+    this.fetchData();
   },
 };
 </script>

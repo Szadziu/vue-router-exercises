@@ -1,7 +1,20 @@
 <template>
   <div>
     <p>
-      <input v-model="postTitle" type="text" placeholder="wpisz imię..." />
+      <input
+        v-model="postLead"
+        type="text"
+        placeholder="wpisz imię..."
+        :disabled="dataProcessing"
+      />
+    </p>
+    <p>
+      <input
+        v-model="postTitle"
+        type="text"
+        placeholder="wpisz tytuł..."
+        :disabled="dataProcessing"
+      />
     </p>
     <p>
       <textarea
@@ -10,11 +23,14 @@
         rows="30"
         v-model="postContent"
         placeholder="treść posta..."
+        :disabled="dataProcessing"
       ></textarea>
     </p>
-    <input type="file" @change="getImage" />
-    <router-link tag="button" to="/">wstecz</router-link>
-    <button @click="sendPost()">wyślij</button>
+    <input type="file" @change="getImage" :disabled="dataProcessing" />
+    <router-link v-if="!dataProcessing" tag="button" to="/">wstecz</router-link>
+    <button @click="sendPost()" :disabled="dataProcessing">
+      {{ dataProcessing ? 'trwa wysyłanie' : 'wyślij' }}
+    </button>
   </div>
 </template>
 
@@ -25,24 +41,24 @@ export default {
   data() {
     return {
       postTitle: '',
-      postLead: 'fdfdf',
+      postLead: '',
       postContent: '',
       postImage: '',
       errors: [],
+      dataProcessing: false,
     };
   },
 
   methods: {
     getImage(e) {
-      console.log(e);
       if (e.target.files.length > 0) {
         this.postImage = e.target.files[0];
       }
-      // this.postImage
-      // e.target.value = '';
     },
 
     async sendPost() {
+      this.dataProcessing = true;
+
       const fd = new FormData();
 
       fd.append('title', this.postTitle);
@@ -55,6 +71,10 @@ export default {
       } catch (e) {
         this.errors.push(e);
       }
+
+      this.$router.push('/posts');
+
+      this.dataProcessing = false;
     },
   },
 };
